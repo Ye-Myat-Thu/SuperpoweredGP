@@ -8,7 +8,7 @@ public class ClickMovementRef : MonoBehaviour
     private Animator animator;
 
     [Header("Movement Settings")]
-    [SerializeField] private LayerMask clickableLayers; // Set this to your 'Ground' layer
+    [SerializeField] private LayerMask clickableLayers;
     [SerializeField] private float lookRotationSpeed = 8f;
 
     void Start()
@@ -19,7 +19,7 @@ public class ClickMovementRef : MonoBehaviour
 
     void Update()
     {
-        // 1. Right Click to Set Destination
+        //Right Click to Set Destination
         if (Input.GetMouseButtonDown(1)) 
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -29,10 +29,10 @@ public class ClickMovementRef : MonoBehaviour
             }
         }
 
-        // 2. Face the direction of travel smoothly
+        //Face the direction of travel smoothly
         FaceMovementDirection();
 
-        // 3. Update Animations
+        //Update Animations
         UpdateAnimation();
     }
 
@@ -49,7 +49,7 @@ public class ClickMovementRef : MonoBehaviour
     {
         if (animator != null)
         {
-            // Calculate speed based on agent velocity
+            //Calculate speed based on agent velocity
             float currentSpeed = agent.velocity.magnitude / agent.speed;
             animator.SetFloat("Speed", currentSpeed, 0.1f, Time.deltaTime);
         }
