@@ -8,7 +8,7 @@ public class ObjectDetector : MonoBehaviour
 
     private FadingObject _currentObject;
 
-    private void LaeUpdate()
+    private void LateUpdate()
     {
         if (!cameraTransform) return;
 
