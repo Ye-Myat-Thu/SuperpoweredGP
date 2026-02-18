@@ -33,7 +33,7 @@ public class ClickMovementRef : MonoBehaviour
         FaceMovementDirection();
 
         //Update Animations
-        UpdateAnimation();
+        //UpdateAnimation();
     }
 
     void FaceMovementDirection()
