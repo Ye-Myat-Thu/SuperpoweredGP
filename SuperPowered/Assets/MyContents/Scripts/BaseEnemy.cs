@@ -100,7 +100,12 @@ public class BaseEnemy : MonoBehaviour
             animator.SetTrigger(attackTrigger);
         }
 
-        //damage system to be implemented later
+        //full damage system to be implemented later
+        IDamageable dmg = target.GetComponent<IDamageable>();
+        if (dmg != null)
+        {
+            dmg.TakeDamage(damage);
+        }
     }
 
     protected virtual void UpdateAnim()

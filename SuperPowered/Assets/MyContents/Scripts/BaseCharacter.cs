@@ -13,8 +13,8 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [SerializeField] private CharacterClassData classData;
 
     [Header("Runtime Core Stats")]
-    [SerializeField] private CoreStats coreStats;       // base + level growth
-    [SerializeField] private CoreStats bonusStats;      // from items/upgrades later
+    [SerializeField] private CoreStats coreStats;       //base + level growth
+    [SerializeField] private CoreStats bonusStats;      //from items/upgrades later
 
     [Header("Level / XP")]
     [SerializeField] private int level = 1;
@@ -26,17 +26,17 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [SerializeField] private float currentMana;
 
     [Header("Components")]
-    [SerializeField] private NavMeshAgent agent; // optional if you use click/hold-to-move with NavMesh
-    [SerializeField] private Animator animator;  // optional
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private Animator animator;
 
-    // Derived stats (computed)
+    //Derived stats (computed)
     public float MaxHealth { get; private set; }
     public float MaxMana { get; private set; }
     public float MoveSpeed { get; private set; }
 
-    // Events for UI
-    public event Action<float, float> OnHealthChanged; // current, max
-    public event Action<float, float> OnManaChanged;   // current, max
+    //Events for UI
+    public event Action<float, float> OnHealthChanged; //current, max
+    public event Action<float, float> OnManaChanged;   //current, max
     public event Action<int> OnLevelUp;
 
     public CharacterClassData ClassData => classData;
@@ -58,7 +58,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable
             return;
         }
 
-        // Build core stats from base + (level-1)*growth
+        //Build core stats from base + (level-1)*growth
         coreStats = classData.baseStats;
         ApplyLevelGrowth(level);
 
@@ -73,7 +73,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable
 
     private void ApplyLevelGrowth(int currentLevel)
     {
-        // If level = 1 => add 0 growth. If level = 2 => add 1 growth, etc.
+        //If level = 1 => add 0 growth. If level = 2 => add 1 growth, etc.
         int levelsToApply = Mathf.Max(currentLevel - 1, 0);
 
         coreStats.Strength += classData.perLevelStats.Strength * levelsToApply;
@@ -92,11 +92,11 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         MaxHealth = classData.baseHealth + totalStr * classData.healthPerStrength;
         MaxMana = classData.baseMana + totalInt * classData.manaPerIntelligence;
 
-        // Move speed scaling (simple, tweak later)
+        //Move speed scaling (simple, tweak later)
         float agiMultiplier = 1f + totalAgi * classData.moveSpeedPerAgility;
         MoveSpeed = classData.baseMoveSpeed * agiMultiplier;
 
-        // Clamp current resources to new max values
+        //Clamp current resources to new max values
         currentHealth = Mathf.Clamp(currentHealth, 0f, MaxHealth);
         currentMana = Mathf.Clamp(currentMana, 0f, MaxMana);
 
@@ -112,7 +112,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         }
     }
 
-    // --- Health / Mana ---
+    //-- Health / Mana --
     public void TakeDamage(float amount)
     {
         if (amount <= 0f) return;
@@ -150,7 +150,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         OnManaChanged?.Invoke(currentMana, MaxMana);
     }
 
-    // --- XP / Leveling ---
+    //-- XP / Leveling --
     public void GainXP(float amount)
     {
         if (amount <= 0f) return;
@@ -168,17 +168,16 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     {
         level++;
 
-        // Apply one step of growth
+        //Apply one step of growth
         coreStats.Strength += classData.perLevelStats.Strength;
         coreStats.Agility += classData.perLevelStats.Agility;
         coreStats.Intelligence += classData.perLevelStats.Intelligence;
 
-        // Basic XP curve (replace later with your tuned curve)
+        //Basic XP curve (replace later with your tuned curve)
         xpToNext = Mathf.Ceil(xpToNext * 1.15f);
 
         RecalculateDerivedStats();
 
-        // Optional: refill some resources on level up (tweak as desired)
         currentHealth = MaxHealth;
         currentMana = MaxMana;
         PushUI();
@@ -194,12 +193,12 @@ public class BaseCharacter : MonoBehaviour, IDamageable
 
     protected virtual void Die()
     {
-        // Hook your death flow (UI, restart, etc.)
-        // animator?.SetTrigger("Die");
+        //Hook your death flow (UI, restart, etc.)
+        //animator?.SetTrigger("Die");
         Debug.Log($"{name} died.");
     }
 
-    // --- For items/upgrades later ---
+    //-- For items/upgrades later --
     public void AddBonusStats(CoreStats add)
     {
         bonusStats.Strength += add.Strength;
