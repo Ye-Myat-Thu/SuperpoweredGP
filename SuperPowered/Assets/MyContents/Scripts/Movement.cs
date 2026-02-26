@@ -7,6 +7,8 @@ public class Movement : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Animator animator;
+    [SerializeField] private CharacterCombat combat;
+    [SerializeField] private GameObject moveIcon;
 
     [Header("Movement Settings")]
     [SerializeField] private LayerMask clickableLayers;
@@ -53,10 +55,28 @@ public class Movement : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            StopMovement();
+        }
+
         FaceMovementDirection();
         UpdateAnimation();
     }
 
+    private void StopMovement()
+    {
+        if (!agent) return;
+
+        agent.ResetPath();
+
+        agent.velocity = Vector3.zero;
+
+        if (animator)
+        {
+            animator.ResetTrigger("Attack");
+        }
+    }
     private void SetDestinationUnderMouse()
     {
         Camera cam = Camera.main;
@@ -67,6 +87,9 @@ public class Movement : MonoBehaviour
         {
             if (!agent.hasPath || Vector3.SqrMagnitude(agent.destination - hit.point) > 0.01f)
                 agent.SetDestination(hit.point);
+            
+            Vector3 offset = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
+            Instantiate(moveIcon, offset, Quaternion.identity);
         }
     }
 

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.AI;
 
 public interface IDamageable
@@ -33,6 +34,13 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [SerializeField] private string hitTrigger = "Hit";
     [SerializeField] private string dieTrigger = "Die";
 
+    [Header("Blink on hit")]
+    [SerializeField] private Renderer[] blinkRenderers;
+    [SerializeField] private int blinkCount = 3;
+    [SerializeField] private float blinkInterval = 0.06f;
+
+    private Coroutine blinkRoutine;
+
     //Derived stats (computed)
     public float MaxHealth { get; private set; }
     public float MaxMana { get; private set; }
@@ -50,6 +58,11 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponentInChildren<Animator>();
+
+        if (blinkRenderers == null || blinkRenderers.Length == 0)
+        {
+            blinkRenderers = GetComponentsInChildren<Renderer>(true);
+        }
 
         InitializeFromClassData();
     }
@@ -129,10 +142,40 @@ public class BaseCharacter : MonoBehaviour, IDamageable
             animator.SetTrigger(hitTrigger);
         }
 
+        //Blink routine reacion
+        if (blinkRoutine != null)
+            StopCoroutine(blinkRoutine);
+
+        blinkRoutine = StartCoroutine(BlinkRoutine());
+
         if (currentHealth <= 0f)
             Die();
 
         Debug.Log("Taking Damage");
+    }
+
+    private IEnumerator BlinkRoutine()
+    {
+        for (int i = 0; i < blinkCount; i++)
+        {
+            SetBlinkVisible(false);
+            yield return new WaitForSeconds(blinkInterval);
+
+            SetBlinkVisible(true);
+            yield return new WaitForSeconds(blinkInterval);
+        }
+
+        SetBlinkVisible(true);
+        blinkRoutine = null;
+    }
+
+    private void SetBlinkVisible(bool visible)
+    {
+        for (int i = 0; i < blinkRenderers.Length; i++)
+        {
+            if (blinkRenderers[i] != null)
+                blinkRenderers[i].enabled = visible;
+        }
     }
 
     public void Heal(float amount)
