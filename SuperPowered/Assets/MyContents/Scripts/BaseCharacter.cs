@@ -29,6 +29,10 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private Animator animator;
 
+    [Header("Animation")]
+    [SerializeField] private string hitTrigger = "Hit";
+    [SerializeField] private string dieTrigger = "Die";
+
     //Derived stats (computed)
     public float MaxHealth { get; private set; }
     public float MaxMana { get; private set; }
@@ -120,8 +124,15 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         currentHealth = Mathf.Max(0f, currentHealth - amount);
         OnHealthChanged?.Invoke(currentHealth, MaxHealth);
 
+        if (animator != null)
+        {
+            animator.SetTrigger(hitTrigger);
+        }
+
         if (currentHealth <= 0f)
             Die();
+
+        Debug.Log("Taking Damage");
     }
 
     public void Heal(float amount)
@@ -194,7 +205,11 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     protected virtual void Die()
     {
         //Hook your death flow (UI, restart, etc.)
-        //animator?.SetTrigger("Die");
+        if (animator != null)
+        {
+            animator.SetTrigger(dieTrigger);
+        }
+        DestroyObject(gameObject, 3f);
         Debug.Log($"{name} died.");
     }
 

@@ -12,6 +12,8 @@ public class Movement : MonoBehaviour
     [SerializeField] private LayerMask clickableLayers;
     [SerializeField] public float lookRotationSpeed = 8f;
 
+    [SerializeField] private TitanWhirlAbility whirlAbility;
+
     [Header("Hold to move")]
     [SerializeField] private bool rightClickRepeat = true;
     [SerializeField] private float repeatInterval = 0.05f;
@@ -23,6 +25,9 @@ public class Movement : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+
+        //if (!whirlAbility)
+        //    whirlAbility = GetComponent<TitanWhirlAbility>();
     }
 
     void Update()
@@ -67,6 +72,11 @@ public class Movement : MonoBehaviour
 
     void FaceMovementDirection()
     {
+        //if (whirlAbility != null && whirlAbility.IsWhirling)
+        //{
+        //    return;
+        //}
+
         Vector3 v = agent.desiredVelocity;
 
         if (v.sqrMagnitude > 0.1f)

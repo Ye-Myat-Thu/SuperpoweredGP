@@ -1,0 +1,134 @@
+using UnityEngine;
+using UnityEngine.AI;
+
+public interface IKnockbackable
+{
+    void ApplyKnockback(UnityEngine.Vector3 direction, float force, float duration);
+}
+
+public class TitanWhirlAbility : MonoBehaviour
+{
+    [Header("References")]
+    [SerializeField] private CombatProfile profile;
+
+    [Header("Whirl Settings")]
+    [SerializeField] private float baseCooldown = 10f;
+    [SerializeField] private float activeDuration = 2f;
+    [SerializeField] private float damageTickInterval = 0.4f;
+    [SerializeField] private float whirlRadius = 2.5f;
+    [SerializeField] private float whirlDamage = 20f;
+    [SerializeField] private Vector3 whirlOffset = Vector3.zero;
+
+    [Header("Knockback")]
+    [SerializeField] private float knockbackForce = 4f;
+    [SerializeField] private float knockbackDuration = 0.2f;
+
+    [Header("VFX")]
+    [SerializeField] private ParticleSystem swirlPrefab;
+    [SerializeField] private Transform vfxSpawnPoint;
+
+    public bool IsWhirling { get; private set; }
+
+    private float nextCastTime;
+    private float endTime;
+    private float nextDamageTick;
+    private ParticleSystem activeVFX;
+
+    private void Start()
+    {
+        nextCastTime = Time.time + baseCooldown;
+    }
+
+    private void Update()
+    {
+        if (!IsWhirling)
+        {
+            if (Time.time >= nextCastTime)
+            {
+                StartWhirl();
+            }
+            return;
+        }
+
+        // While active, keep dealing damage in ticks
+        if (Time.time >= nextDamageTick)
+        {
+            nextDamageTick = Time.time + damageTickInterval;
+            DealWhirlDamage();
+        }
+
+        // End after duration
+        if (Time.time >= endTime)
+        {
+            EndWhirl();
+        }
+    }
+
+    private void StartWhirl()
+    {
+        IsWhirling = true;
+        endTime = Time.time + activeDuration;
+        nextDamageTick = Time.time; // damage immediately on cast
+        nextCastTime = Time.time + baseCooldown;
+
+        SpawnWhirlVFX();
+    }
+
+    private void EndWhirl()
+    {
+        IsWhirling = false;
+
+        if (activeVFX != null)
+        {
+            Destroy(activeVFX.gameObject);
+            activeVFX = null;
+        }
+    }
+
+    private void SpawnWhirlVFX()
+    {
+        if (!swirlPrefab) return;
+        if (activeVFX != null) return;
+
+        Transform spawnRef = vfxSpawnPoint ? vfxSpawnPoint : transform;
+        activeVFX = Instantiate(swirlPrefab, spawnRef.position, spawnRef.rotation, spawnRef);
+    }
+
+    private void DealWhirlDamage()
+    {
+        Vector3 center = transform.TransformPoint(whirlOffset);
+
+        LayerMask hitMask = profile ? profile.enemyLayers : ~0;
+        Collider[] hits = Physics.OverlapSphere(center, whirlRadius, hitMask);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform hitTransform = hits[i].transform;
+
+            IDamageable dmg = hitTransform.GetComponentInParent<IDamageable>();
+            if (dmg != null)
+            {
+                dmg.TakeDamage(whirlDamage);
+            }
+
+            IKnockbackable knock = hitTransform.GetComponentInParent<IKnockbackable>();
+            if (knock != null)
+            {
+                Vector3 dir = (hitTransform.position - transform.position);
+                dir.y = 0f;
+
+                if (dir.sqrMagnitude > 0.001f)
+                {
+                    knock.ApplyKnockback(dir.normalized, knockbackForce, knockbackDuration);
+                }
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Vector3 center = transform.TransformPoint(whirlOffset);
+        Gizmos.DrawWireSphere(center, whirlRadius);
+    }
+}

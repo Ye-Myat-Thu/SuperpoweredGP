@@ -6,6 +6,12 @@ public class CharacterCombat : MonoBehaviour
     [Header("Profile")]
     [SerializeField] private CombatProfile profile;
 
+    [Header("Melee Hit Position")]
+    [SerializeField] private Vector3 meleeOffset = new Vector3(0f, 0f, 1.5f);
+    [SerializeField] private float damage = 20f;
+    [SerializeField] private float meleeRadius = 1.2f;
+    [SerializeField] private LayerMask enemyLayers;
+
     [Header("Aiming")]
     [SerializeField] private LayerMask aimLayers;      // usually ground layer
     [SerializeField] private Transform firePoint;      // where projectiles spawn (weapon tip / hand)
@@ -46,28 +52,52 @@ public class CharacterCombat : MonoBehaviour
             
     }
 
+
+    //old TryAttack
+    //private void TryAttack()
+    //{
+    //    float cooldown = 1f / Mathf.Max(profile.attacksPerSecond, 0.01f);
+    //    if (Time.time < nextAttackTime) return;
+    //    nextAttackTime = Time.time + cooldown;
+
+    //    // Aim toward mouse (Dota-like)
+    //    Vector3 aimPoint;
+    //    if (TryGetAimPoint(out aimPoint))
+    //    {
+    //        FacePoint(aimPoint);
+    //    }
+
+    //    // Optional: stop moving briefly while attacking
+    //    // if (agent) agent.ResetPath();
+
+    //    if (animator && !string.IsNullOrEmpty(attackTrigger))
+    //        animator.SetTrigger(attackTrigger);
+
+    //    // If you want hits to sync with the animation, call AttackNow() from an Animation Event.
+    //    // Otherwise, just do it instantly:
+    //    AttackNow();
+    //}
+
     private void TryAttack()
     {
         float cooldown = 1f / Mathf.Max(profile.attacksPerSecond, 0.01f);
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + cooldown;
 
-        // Aim toward mouse (Dota-like)
         Vector3 aimPoint;
         if (TryGetAimPoint(out aimPoint))
         {
-            FacePoint(aimPoint);
+            //FacePoint(aimPoint);
+            if (profile.attackType == AttackType.Melee)
+                FacePoint(aimPoint);
+            else
+                FacePointInstant(aimPoint);
         }
-
-        // Optional: stop moving briefly while attacking
-        // if (agent) agent.ResetPath();
 
         if (animator && !string.IsNullOrEmpty(attackTrigger))
             animator.SetTrigger(attackTrigger);
-
-        // If you want hits to sync with the animation, call AttackNow() from an Animation Event.
-        // Otherwise, just do it instantly:
-        AttackNow();
+        else
+            AttackNow();
     }
 
     // Call this from an animation event for nicer timing (Titan melee especially)
@@ -89,17 +119,35 @@ public class CharacterCombat : MonoBehaviour
         }
     }
 
-    private void DoMelee()
-    {
-        // hit center in front of character
-        Vector3 center = transform.position + transform.forward * profile.meleeRange;
 
-        Collider[] hits = Physics.OverlapSphere(center, profile.meleeRadius, profile.enemyLayers);
+    //old melee
+    //private void DoMelee()
+    //{
+    //    // hit center in front of character
+    //    Vector3 center = transform.position + transform.forward * profile.meleeRange;
+
+    //    Collider[] hits = Physics.OverlapSphere(center, profile.meleeRadius, profile.enemyLayers);
+    //    for (int i = 0; i < hits.Length; i++)
+    //    {
+    //        var dmg = hits[i].GetComponentInParent<IDamageable>();
+    //        if (dmg != null)
+    //            dmg.TakeDamage(profile.damage);
+    //    }
+    //}
+
+    public void DoMelee()
+    {
+        Vector3 hitCenter = transform.TransformPoint(meleeOffset);
+
+        Collider[] hits = Physics.OverlapSphere(hitCenter, profile.meleeRadius, profile.enemyLayers);
+
         for (int i = 0; i < hits.Length; i++)
         {
-            var dmg = hits[i].GetComponentInParent<IDamageable>();
+            IDamageable dmg = hits[i].GetComponentInParent<IDamageable>();
             if (dmg != null)
+            {
                 dmg.TakeDamage(profile.damage);
+            }
         }
     }
 
@@ -158,12 +206,31 @@ public class CharacterCombat : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * aimTurnSpeed);
     }
 
+    private void FacePointInstant(Vector3 worldPoint)
+    {
+        Vector3 dir = worldPoint - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        transform.rotation = Quaternion.LookRotation(dir.normalized);
+    }
+
     // Debug helper: shows melee hit area in Scene view
+
+    //old Gizmo
+    //private void OnDrawGizmosSelected()
+    //{
+    //    if (!profile || profile.attackType != AttackType.Melee) return;
+    //    Gizmos.color = Color.red;
+    //    Vector3 center = transform.position + transform.forward * profile.meleeRange;
+    //    Gizmos.DrawWireSphere(center, profile.meleeRadius);
+    //}
+
     private void OnDrawGizmosSelected()
     {
-        if (!profile || profile.attackType != AttackType.Melee) return;
         Gizmos.color = Color.red;
-        Vector3 center = transform.position + transform.forward * profile.meleeRange;
-        Gizmos.DrawWireSphere(center, profile.meleeRadius);
+
+        Vector3 hitCenter = transform.TransformPoint(meleeOffset);
+        Gizmos.DrawWireSphere(hitCenter, meleeRadius);
     }
 }
