@@ -49,6 +49,7 @@ public class IronSkin : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.W))
         {
             CastIronSkin();
+            Debug.Log("Iron Skin is casted.");
         }
     }
 
