@@ -8,7 +8,7 @@ public interface IDamageable
     void TakeDamage(float amount);
 }
 
-public class BaseCharacter : MonoBehaviour, IDamageable
+public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
 {
     [Header("Class Data")]
     [SerializeField] private CharacterClassData classData;
@@ -16,6 +16,11 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [Header("Runtime Core Stats")]
     [SerializeField] private CoreStats coreStats;       //base + level growth
     [SerializeField] private CoreStats bonusStats;      //from items/upgrades later
+
+    [Header("Regen")]
+    [SerializeField] private bool enableHealthRegen = true;
+    private float regenBonusFlat;     // added by buffs like Iron Skin
+    public float HealthRegenPerSecond { get; private set; }
 
     [Header("Level / XP")]
     [SerializeField] private int level = 1;
@@ -38,6 +43,15 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     [SerializeField] private Renderer[] blinkRenderers;
     [SerializeField] private int blinkCount = 3;
     [SerializeField] private float blinkInterval = 0.06f;
+
+    [Header("Rage Settings")]
+    [SerializeField] private bool isInvulnerable;
+    public bool IsInvulnerable => isInvulnerable;
+
+    public void SetInvulnerable(bool value)
+    {
+        isInvulnerable = value;
+    }
 
     private Coroutine blinkRoutine;
 
@@ -65,6 +79,29 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         }
 
         InitializeFromClassData();
+    }
+
+    private void Update()
+    {
+        if (!enableHealthRegen) return;
+        if (currentHealth <= 0f) return;
+        if (currentHealth >= MaxHealth) return;
+
+        float amount = HealthRegenPerSecond * Time.deltaTime;
+        if (amount > 0f)
+            Heal(amount);
+    }
+
+    public void AddRegenBonus(float amount)
+    {
+        regenBonusFlat += amount;
+        RecalculateDerivedStats();
+    }
+
+    public void RemoveRegenBonus(float amount)
+    {
+        regenBonusFlat -= amount;
+        RecalculateDerivedStats();
     }
 
     private void InitializeFromClassData()
@@ -113,6 +150,11 @@ public class BaseCharacter : MonoBehaviour, IDamageable
         float agiMultiplier = 1f + totalAgi * classData.moveSpeedPerAgility;
         MoveSpeed = classData.baseMoveSpeed * agiMultiplier;
 
+        // Health regen scaling
+        float baseRegen = classData.baseHealthRegen;
+        float strRegen = totalStr * classData.healthRegenPerStrength;
+        HealthRegenPerSecond = baseRegen + strRegen + regenBonusFlat;
+
         //Clamp current resources to new max values
         currentHealth = Mathf.Clamp(currentHealth, 0f, MaxHealth);
         currentMana = Mathf.Clamp(currentMana, 0f, MaxMana);
@@ -132,6 +174,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable
     //-- Health / Mana --
     public void TakeDamage(float amount)
     {
+        if (isInvulnerable) return;
         if (amount <= 0f) return;
 
         currentHealth = Mathf.Max(0f, currentHealth - amount);

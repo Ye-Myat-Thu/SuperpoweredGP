@@ -34,6 +34,10 @@ public class CharacterClassData : ScriptableObject
     [Header("Base Movement")]
     public float baseMoveSpeed = 6f;
 
+    [Header("Health Regen")]
+    public float baseHealthRegen = 1f;
+    public float healthRegenPerStrength = 0.05f;
+
     [Header("Scaling Multipliers (tweak to taste)")]
     public float healthPerStrength = 10f;
     public float manaPerIntelligence = 8f;

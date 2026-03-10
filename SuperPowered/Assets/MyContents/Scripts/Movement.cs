@@ -77,19 +77,50 @@ public class Movement : MonoBehaviour
             animator.ResetTrigger("Attack");
         }
     }
+
+    //Old func
+    //private void SetDestinationUnderMouse()
+    //{
+    //    Camera cam = Camera.main;
+    //    if (!cam) return;
+
+    //    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+    //    if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, clickableLayers))
+    //    {
+    //        if (!agent.hasPath || Vector3.SqrMagnitude(agent.destination - hit.point) > 0.01f)
+    //            agent.SetDestination(hit.point);
+
+    //        Vector3 offset = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
+    //        Instantiate(moveIcon, offset, Quaternion.identity);
+    //    }
+    //}
+
     private void SetDestinationUnderMouse()
     {
         Camera cam = Camera.main;
         if (!cam) return;
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
         if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, clickableLayers))
         {
-            if (!agent.hasPath || Vector3.SqrMagnitude(agent.destination - hit.point) > 0.01f)
+            bool changed = !agent.hasPath || Vector3.SqrMagnitude(agent.destination - hit.point) > 1f;
+
+            if (changed)
+            {
                 agent.SetDestination(hit.point);
-            
-            Vector3 offset = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
-            Instantiate(moveIcon, offset, Quaternion.identity);
+
+                Vector3 pos = hit.point + Vector3.up * 0.05f;
+
+                Vector3 dir = hit.point - transform.position;
+                dir.y = 0f;
+
+                Quaternion rot = dir.sqrMagnitude > 0.001f
+                    ? Quaternion.LookRotation(dir.normalized, Vector3.up)
+                    : Quaternion.identity;
+
+                Instantiate(moveIcon, pos, rot);
+            }
         }
     }
 
@@ -100,7 +131,8 @@ public class Movement : MonoBehaviour
         //    return;
         //}
 
-        Vector3 v = agent.desiredVelocity;
+        //Vector3 v = agent.desiredVelocity;
+        Vector3 v = agent.velocity;
 
         if (v.sqrMagnitude > 0.1f)
         {

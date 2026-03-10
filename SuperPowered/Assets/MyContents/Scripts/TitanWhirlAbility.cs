@@ -6,7 +6,7 @@ public interface IKnockbackable
     void ApplyKnockback(UnityEngine.Vector3 direction, float force, float duration);
 }
 
-public class TitanWhirlAbility : MonoBehaviour
+public class TitanWhirlAbility : MonoBehaviour, ICooldownOverrideable
 {
     [Header("References")]
     [SerializeField] private CombatProfile profile;
@@ -33,6 +33,55 @@ public class TitanWhirlAbility : MonoBehaviour
     private float endTime;
     private float nextDamageTick;
     private ParticleSystem activeVFX;
+
+    //---------------------------------
+    [Header("Cooldown override interface")]
+    [SerializeField] private float cooldown = 10f;
+    private float nextReadyTime;
+    private bool overrideCooldownEnabled;
+    private float overrideCooldownSeconds;
+
+    public void SetCooldownOverride(bool enabled, float overrideCooldownSeconds)
+    {
+        overrideCooldownEnabled = enabled;
+        this.overrideCooldownSeconds = overrideCooldownSeconds;
+    }
+
+    public void ForceCast()
+    {
+        TryCast();
+    }
+
+    public void TryCast()
+    {
+        float cd = overrideCooldownEnabled ? overrideCooldownSeconds : cooldown;
+        if (Time.time < nextReadyTime) return;
+
+        if (!IsWhirling)
+        {
+            if (Time.time >= nextCastTime)
+            {
+                StartWhirl();
+            }
+            return;
+        }
+
+        // While active, keep dealing damage in ticks
+        if (Time.time >= nextDamageTick)
+        {
+            nextDamageTick = Time.time + damageTickInterval;
+            DealWhirlDamage();
+        }
+
+        // End after duration
+        if (Time.time >= endTime)
+        {
+            EndWhirl();
+        }
+
+        nextReadyTime = Time.time + cd;
+    }
+    //---------------------------------
 
     private void Start()
     {
