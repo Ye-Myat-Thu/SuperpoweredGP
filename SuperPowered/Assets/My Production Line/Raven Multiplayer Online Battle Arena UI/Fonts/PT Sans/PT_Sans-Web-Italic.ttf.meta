@@ -1,0 +1,30 @@
+fileFormatVersion: 2
+guid: 8ed31a1b09cf31042963c69f689cd4e5
+timeCreated: 1557239168
+licenseType: Store
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: PT Sans
+  fontNames:
+  - PT Sans
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 1abe90c068e30da4d9a066787ff7f534, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 43449
+  packageName: Raven - MOBA UI
+  packageVersion: 3.1
+  assetPath: Assets/My Production Line/Raven Multiplayer Online Battle Arena UI/Fonts/PT
+    Sans/PT_Sans-Web-Italic.ttf
+  uploadId: 318535

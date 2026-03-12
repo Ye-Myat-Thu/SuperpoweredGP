@@ -24,6 +24,8 @@ MonoBehaviour:
   baseHealth: 100
   baseMana: 50
   baseMoveSpeed: 6
+  baseHealthRegen: 0.2
+  healthRegenPerStrength: 0.05
   healthPerStrength: 10
   manaPerIntelligence: 8
   moveSpeedPerAgility: 0.03

@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 0acb808efb3c3774491e1b65c39aecfd
+timeCreated: 1557239167
+licenseType: Store
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: PT Serif
+  fontNames:
+  - PT Serif
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 43449
+  packageName: Raven - MOBA UI
+  packageVersion: 3.1
+  assetPath: Assets/My Production Line/Raven Multiplayer Online Battle Arena UI/Fonts/PT
+    Serif/PT_Serif-Web-Italic.ttf
+  uploadId: 318535

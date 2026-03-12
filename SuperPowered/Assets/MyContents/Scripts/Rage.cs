@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Rage : MonoBehaviour
+public class Rage : MonoBehaviour, ICooldownOverrideable, IUpgradeableAbility
 {
     [Header("References")]
     [SerializeField] private BaseCharacter owner;
@@ -10,9 +10,24 @@ public class Rage : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
 
     [Header("Cast")]
-    [SerializeField] private KeyCode castKey = KeyCode.Q;
+    [SerializeField] private KeyCode castKey = KeyCode.W;
     [SerializeField] private float cooldown = 10f;
     [SerializeField] private float duration = 1.5f;
+
+    [Header("Level Up")]
+    [SerializeField] private int abilityLevel = 1;
+    [SerializeField] private int maxAbilityLevel = 5;
+    public int AbilityLevel => abilityLevel;
+    public int MaxAbilityLevel => maxAbilityLevel;
+    public event System.Action<int> OnAbilityLevelChanged;
+
+    [Header("UI")]
+    public float CooldownDuration => cooldown;
+    public float CooldownRemaining => Mathf.Max(0f, nextCastTime - Time.time);
+
+    [Header("Override")]
+    private bool overrideCooldownEnabled;
+    private float overrideCooldownSeconds;
 
     [Header("Movement Boost")]
     [SerializeField] private float boostedMoveSpeed = 10f;
@@ -76,11 +91,46 @@ public class Rage : MonoBehaviour
         UpdateVFXTransform();
     }
 
+    public void LevelUpAbility()
+    {
+        if (abilityLevel >= maxAbilityLevel) return;
+        abilityLevel++;
+        OnAbilityLevelChanged?.Invoke(abilityLevel);
+
+        damage += 5f;
+        collisionRadius += 0.2f;
+        duration += 0.45f;
+        cooldown -= 1f;
+        knockbackForce += 3f;
+    }
+
+    //----------Interface methods
+    public void SetCooldownOverride(bool enabled, float overrideCooldownSeconds)
+    {
+        overrideCooldownEnabled = enabled;
+        this.overrideCooldownSeconds = overrideCooldownSeconds;
+
+        if (enabled)
+            nextCastTime = Time.time;
+    }
+
+    public void ForceCast()
+    {
+        //if (!IsActive && Time.time >= nextCastTime)
+        //    StartAbility();
+
+        if (!IsActive) StartAbility();
+    }
+    //---------------------------
+
     private void StartAbility()
     {
         IsActive = true;
         endTime = Time.time + duration;
-        nextCastTime = Time.time + cooldown;
+        //nextCastTime = Time.time + cooldown;
+        float cd = overrideCooldownEnabled ? overrideCooldownSeconds : cooldown;
+        nextCastTime = Time.time + cd;
+
         nextHitCheckTime = Time.time;
 
         hitThisCast.Clear();

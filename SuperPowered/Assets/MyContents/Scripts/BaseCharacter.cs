@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.AI;
 
 public interface IDamageable
@@ -26,6 +27,8 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     [SerializeField] private int level = 1;
     [SerializeField] private float xp = 0f;
     [SerializeField] private float xpToNext = 100f;
+    [SerializeField] private int levelCap = 30;
+    [SerializeField] private float xpPerLevel = 100;
 
     [Header("Runtime Resources")]
     [SerializeField] private float currentHealth;
@@ -34,6 +37,9 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     [Header("Components")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private Animator animator;
+    [SerializeField] private List<MonoBehaviour> scriptsToBeDiabled = new List<MonoBehaviour>();
+    private bool isDead;
+    public bool IsDead => isDead;
 
     [Header("Animation")]
     [SerializeField] private string hitTrigger = "Hit";
@@ -63,7 +69,14 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     //Events for UI
     public event Action<float, float> OnHealthChanged; //current, max
     public event Action<float, float> OnManaChanged;   //current, max
+
     public event Action<int> OnLevelUp;
+    public event Action<float, float> OnXPChanged;
+
+    public float CurrentHealth => currentHealth;
+    public float CurrentXP => xp;
+    public float XPToNext => xpToNext;
+    public int LevelCap => levelCap;
 
     public CharacterClassData ClassData => classData;
     public int Level => level;
@@ -121,7 +134,10 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         currentHealth = MaxHealth;
         currentMana = MaxMana;
 
+        xpToNext = xpPerLevel;
+        xp = Mathf.Max(0f, xp);
         PushUI();
+        OnXPChanged?.Invoke(xp, xpToNext);
         ApplyMoveSpeedToAgent();
     }
 
@@ -251,18 +267,24 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     public void GainXP(float amount)
     {
         if (amount <= 0f) return;
+        if (level >= levelCap) return;
 
         xp += amount;
+
+        OnXPChanged?.Invoke(xp, xpToNext);
 
         while (xp >= xpToNext)
         {
             xp -= xpToNext;
             LevelUpInternal();
+            OnXPChanged?.Invoke(xp, xpToNext);
         }
     }
 
     private void LevelUpInternal()
     {
+        if (level >= levelCap) return;
+        
         level++;
 
         //Apply one step of growth
@@ -270,8 +292,10 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         coreStats.Agility += classData.perLevelStats.Agility;
         coreStats.Intelligence += classData.perLevelStats.Intelligence;
 
-        //Basic XP curve (replace later with your tuned curve)
-        xpToNext = Mathf.Ceil(xpToNext * 1.15f);
+        //Basic XP curve
+        //xpToNext = Mathf.Ceil(xpToNext * 1.15f);
+        xpToNext = xpPerLevel;
+        OnXPChanged?. Invoke(xp, xpToNext);
 
         RecalculateDerivedStats();
 
@@ -286,10 +310,16 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     {
         OnHealthChanged?.Invoke(currentHealth, MaxHealth);
         OnManaChanged?.Invoke(currentMana, MaxMana);
+        OnXPChanged?.Invoke(xp, xpToNext);
     }
 
     protected virtual void Die()
     {
+        if (IsDead) return;
+        isDead = true;
+
+        DisableScriptsOnDeath();
+        
         //Hook your death flow (UI, restart, etc.)
         if (animator != null)
         {
@@ -297,6 +327,18 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         }
         DestroyObject(gameObject, 3f);
         Debug.Log($"{name} died.");
+    }
+
+    private void DisableScriptsOnDeath()
+    {
+        for (int i = 0; i < scriptsToBeDiabled.Count; i++)
+        {
+            var mb = scriptsToBeDiabled[i];
+            if (mb != null)
+            {
+                mb.enabled = false;
+            }
+        }
     }
 
     //-- For items/upgrades later --

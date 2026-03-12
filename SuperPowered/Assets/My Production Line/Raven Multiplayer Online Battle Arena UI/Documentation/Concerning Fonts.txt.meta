@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 0bf255833bec9df47a01048459f6aa57
+timeCreated: 1557239162
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 43449
+  packageName: Raven - MOBA UI
+  packageVersion: 3.1
+  assetPath: Assets/My Production Line/Raven Multiplayer Online Battle Arena UI/Documentation/Concerning
+    Fonts.txt
+  uploadId: 318535

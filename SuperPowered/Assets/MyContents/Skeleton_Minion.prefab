@@ -136,9 +136,12 @@ MonoBehaviour:
   repathInterval: 0.1
   chaseStopDistance: 1.5
   rotateWithAgent: 1
+  xpDropPrefab: {fileID: 3959781927968863749, guid: 35c3d3dc48c72384a82b2bb529467825, type: 3}
+  xpDropOffset: {x: 0, y: 0.2, z: 0}
   attackRange: 1.8
   attackCooldown: 1
   damage: 10
+  knockbackResistance: 0
   hitRecoverTime: 0.35
   blinkRenderers: []
   blinkCount: 3
@@ -150,6 +153,8 @@ MonoBehaviour:
   attackTrigger: Attack
   hitTrigger: Hit
   dieTrigger: Die
+  componentsToDisable:
+  - {fileID: 6771393703676856463}
 --- !u!136 &6771393703676856463
 CapsuleCollider:
   m_ObjectHideFlags: 0

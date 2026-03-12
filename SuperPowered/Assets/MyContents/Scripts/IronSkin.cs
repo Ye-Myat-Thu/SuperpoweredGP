@@ -2,12 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IronSkin : MonoBehaviour
+public class IronSkin : MonoBehaviour, IUpgradeableAbility
 {
     [Header("IronSkin Settings")]
     [SerializeField] private float duration = 5f;
     [SerializeField] private float cooldown = 15f;
     [SerializeField] private float bonusHealthRegen = 10f;
+
+    [Header("Input")]
+    [SerializeField] private KeyCode castKey = KeyCode.E;
+
+    [Header("Level Up")]
+    [SerializeField] private int abilityLevel = 1;
+    [SerializeField] private int maxAbilityLevel = 5;
+    public int AbilityLevel => abilityLevel;
+    public int MaxAbilityLevel => maxAbilityLevel;
+    public event System.Action<int> OnAbilityLevelChanged;
+
+    [Header("UI")]
+    public float CooldownDuration => cooldown;
+    public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
 
     [Header("Behaviour")]
     [SerializeField] private bool castAllAbilitiesOnStart = true;
@@ -46,11 +60,21 @@ public class IronSkin : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(castKey))
         {
             CastIronSkin();
             Debug.Log("Iron Skin is casted.");
         }
+    }
+
+    public void LevelUpAbility()
+    {
+        if (abilityLevel >= maxAbilityLevel) return;
+        abilityLevel++;
+        OnAbilityLevelChanged?.Invoke(abilityLevel);
+
+        bonusHealthRegen += 1.5f;
+        cooldown -= 1.5f;
     }
 
     public bool CanCast => Time.time >= nextReadyTime && !isActive;

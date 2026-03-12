@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: eec57b7632ba17344bceabd2668141f1
+timeCreated: 1557240889
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 43449
+  packageName: Raven - MOBA UI
+  packageVersion: 3.1
+  assetPath: Assets/My Production Line/Raven Multiplayer Online Battle Arena UI/Demo/demo_moba.unity
+  uploadId: 318535

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.AI;
 
 public class BaseEnemy : MonoBehaviour, IDamageable, IKnockbackable
@@ -14,6 +15,10 @@ public class BaseEnemy : MonoBehaviour, IDamageable, IKnockbackable
     [SerializeField] private float repathInterval = 0.1f;
     [SerializeField] private float chaseStopDistance = 1.5f;
     [SerializeField] private bool rotateWithAgent = true;
+
+    [Header("XP Drop")]
+    [SerializeField] private GameObject xpDropPrefab;
+    [SerializeField] private Vector3 xpDropOffset = Vector3.up * 0.2f;
 
     [Header("Combat")]
     [SerializeField] private float attackRange = 1.8f;
@@ -42,6 +47,11 @@ public class BaseEnemy : MonoBehaviour, IDamageable, IKnockbackable
     [SerializeField] private string attackTrigger = "Attack";
     [SerializeField] private string hitTrigger = "Hit";
     [SerializeField] private string dieTrigger = "Die";
+
+    [Header("Misc Components")]
+    [SerializeField] private List<Component> componentsToDisable = new();
+    private bool isDead;
+    public bool IsDead => isDead;
 
     public State currentState { get; private set; } = State.Chasing;
 
@@ -339,9 +349,24 @@ public class BaseEnemy : MonoBehaviour, IDamageable, IKnockbackable
         }
     }
 
+    private void DisableScriptsOnDeath()
+    {
+        for (int i = 0; i < componentsToDisable.Count; i++)
+        {
+            var c = componentsToDisable[i];
+            if (!c) continue;
+
+            if (c is Behaviour b) b.enabled = false;     // MonoBehaviour, Animator, NavMeshAgent
+            else if (c is Collider col) col.enabled = false; // CapsuleCollider, etc.
+            else if (c is Renderer r) r.enabled = false; // optional
+        }
+    }
+
     protected virtual void Die()
     {
         currentState = State.Dead;
+
+        DisableScriptsOnDeath();
 
         if (agent)
         {
@@ -356,6 +381,16 @@ public class BaseEnemy : MonoBehaviour, IDamageable, IKnockbackable
 
         SetBlinkVisible(true);
         OnDied?.Invoke(this);
+
+        if (IsDead) return;
+        isDead = true;
+
+        if (xpDropPrefab != null)
+        {
+            Instantiate(xpDropPrefab, transform.position + xpDropOffset, Quaternion.identity);
+        }
+
+        
 
         Destroy(gameObject, 3f);
     }
