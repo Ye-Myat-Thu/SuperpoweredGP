@@ -118,6 +118,7 @@ public class TitanWhirlAbility : MonoBehaviour, ICooldownOverrideable, IUpgradea
         baseCooldown -= 1.5f;
         whirlRadius += 2.5f;
         activeDuration += 0.45f;
+        damageTickInterval -= 0.25f;
     }
 
     private void StartWhirl()
