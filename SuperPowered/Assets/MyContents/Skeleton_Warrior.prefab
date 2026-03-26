@@ -1437,8 +1437,8 @@ MonoBehaviour:
   blinkRenderers: []
   blinkCount: 3
   blinkInterval: 0.06
-  maxHealth: 400
-  currentHealth: 400
+  maxHealth: 200
+  currentHealth: 200
   animator: {fileID: 1754444017057470935}
   speedParam: Speed
   attackTrigger: Attack
