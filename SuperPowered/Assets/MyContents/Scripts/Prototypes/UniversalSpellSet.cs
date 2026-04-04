@@ -12,15 +12,18 @@ public class UniversalSpellSet : MonoBehaviour
         Cataclysm
     }
 
+    [Header("Equip State")]
+    [SerializeField] private bool blizzardEquipped;
+    [SerializeField] private bool breathEquipped;
+    [SerializeField] private bool enlightenmentEquipped;
+    [SerializeField] private bool cataclysmEquipped;
+
     [Header("Layers")]
     [SerializeField] private LayerMask groundLayers;
     [SerializeField] private LayerMask enemyLayers;
 
     [Header("Input Keys")]
-    [SerializeField] private KeyCode blizzardKey = KeyCode.Alpha1;
-    [SerializeField] private KeyCode breathKey = KeyCode.Alpha2;
-    [SerializeField] private KeyCode enlightenmentKey = KeyCode.Alpha3;
-    [SerializeField] private KeyCode cataclysmKey = KeyCode.Alpha4;
+    [SerializeField] private KeyCode equippedSpellKey = KeyCode.R;
 
     [Header("Raycast")]
     [SerializeField] private float maxRayDistance = 500f;
@@ -110,15 +113,47 @@ public class UniversalSpellSet : MonoBehaviour
         UpdateEnlightenmentCharges();
 
         // Spell key handling
-        if (Input.GetKeyDown(blizzardKey)) ToggleAim(SpellType.BlizzardRain);
-        if (Input.GetKeyDown(breathKey)) ToggleAim(SpellType.DragonsBreath);
+        //if (Input.GetKeyDown(blizzardKey)) ToggleAim(SpellType.BlizzardRain);
+        //if (Input.GetKeyDown(breathKey)) ToggleAim(SpellType.DragonsBreath);
 
-        if (Input.GetKeyDown(enlightenmentKey)) TryCastEnlightenment();
-        if (Input.GetKeyDown(cataclysmKey)) TryCastCataclysm();
+        //if (Input.GetKeyDown(enlightenmentKey)) TryCastEnlightenment();
+        //if (Input.GetKeyDown(cataclysmKey)) TryCastCataclysm();
+
+        if (Input.GetKeyDown(equippedSpellKey))
+        {
+            CastEquippedSpell();
+        }
 
         // Aiming updates
         if (blizzardAiming) UpdateBlizzardAim();
         if (breathAiming) UpdateBreathAim();
+    }
+
+    private void CastEquippedSpell()
+    {
+        if (blizzardEquipped)
+        {
+            ToggleAim(SpellType.BlizzardRain);
+            return;
+        }
+
+        if (breathEquipped)
+        {
+            ToggleAim(SpellType.DragonsBreath);
+            return;
+        }
+
+        if (enlightenmentEquipped)
+        {
+            TryCastEnlightenment();
+            return;
+        }
+
+        if (cataclysmEquipped)
+        {
+            TryCastCataclysm();
+            return;
+        }
     }
 
     // =========================
@@ -509,4 +544,151 @@ public class UniversalSpellSet : MonoBehaviour
 
     private float GetCataclysmCooldown() => cataclysmCooldown[L(cataclysmLevel)];
     private float GetCataclysmDamage() => cataclysmDamage[L(cataclysmLevel)];
+
+
+    // ===== Upgrades and Equipments ===== //
+    public void EquipSpell(SpellType SpellType)
+    {
+        blizzardEquipped = false;
+        breathEquipped = false;
+        enlightenmentEquipped = false;
+        cataclysmEquipped = false;
+
+        switch (SpellType)
+        {
+            case SpellType.BlizzardRain:
+                blizzardEquipped = true;
+                break;
+
+            case SpellType.DragonsBreath:
+                breathEquipped = true;
+                break;
+
+            case SpellType.Enlightenment:
+                enlightenmentEquipped = true;
+                break;
+
+            case SpellType.Cataclysm:
+                cataclysmEquipped = true;
+                break;
+        }
+
+        Debug.Log($"Equipped universal spell: {SpellType}");
+    }
+
+    public void UpgradeSpell(SpellType SpellType)
+    {
+        switch (SpellType)
+        {
+            case SpellType.BlizzardRain:
+                if (blizzardLevel < 3)
+                    blizzardLevel++;
+                break;
+
+            case SpellType.DragonsBreath:
+                if (breathLevel < 3)
+                    breathLevel++;
+                break;
+
+            case SpellType.Enlightenment:
+                if (enlightenmentLevel < 3)
+                {
+                    enlightenmentLevel++;
+                    enlightenmentCharges = Mathf.Clamp(enlightenmentCharges, 0, GetEnlightenmentMaxCharges());
+                }
+                break;
+
+            case SpellType.Cataclysm:
+                if (cataclysmLevel < 3)
+                    cataclysmLevel++;
+                break;
+        }
+
+        Debug.Log($"Upgraded universal spell: {SpellType}");
+    }
+
+    public bool IsSpellEquipped(SpellType SpellType)
+    {
+        switch (SpellType)
+        {
+            case SpellType.BlizzardRain: return blizzardEquipped;
+            case SpellType.DragonsBreath: return breathEquipped;
+            case SpellType.Enlightenment: return enlightenmentEquipped;
+            case SpellType.Cataclysm: return cataclysmEquipped;
+            default: return false;
+        }
+    }
+
+    public int GetSpellLevel(SpellType SpellType)
+    {
+        switch (SpellType)
+        {
+            case SpellType.BlizzardRain: return blizzardLevel;
+            case SpellType.DragonsBreath: return breathLevel;
+            case SpellType.Enlightenment: return enlightenmentLevel;
+            case SpellType.Cataclysm: return cataclysmLevel;
+            default: return 1;
+        }
+    }
+
+    public bool CanUpgradeSpell(SpellType SpellType)
+    {
+        return GetSpellLevel(SpellType) < 3;
+    }
+
+    // ===== Cooldown UI ===== //
+
+    public bool HasEquippedSpell()
+    {
+        return blizzardEquipped || breathEquipped || enlightenmentEquipped || cataclysmEquipped;
+    }
+
+    public SpellType? GetEquippedSpell()
+    {
+        if (blizzardEquipped) return SpellType.BlizzardRain;
+        if (breathEquipped) return SpellType.DragonsBreath;
+        if (enlightenmentEquipped) return SpellType.Enlightenment;
+        if (cataclysmEquipped) return SpellType.Cataclysm;
+
+        return null;
+    }
+
+    public float GetEquippedSpellCooldownRemaining()
+    {
+        if (blizzardEquipped)
+            return Mathf.Max(0f, blizzardNextReady - Time.time);
+
+        if (breathEquipped)
+            return Mathf.Max(0f, breathNextReady - Time.time);
+
+        if (enlightenmentEquipped)
+        {
+            if (enlightenmentCharges > 0)
+                return 0f;
+
+            return Mathf.Max(0f, enlightenmentNextChargeTime - Time.time);
+        }
+
+        if (cataclysmEquipped)
+            return Mathf.Max(0f, cataclysmNextReady - Time.time);
+
+        return 0f;
+    }
+
+    public float GetEquippedSpellCooldownDuration()
+    {
+        if (blizzardEquipped)
+            return GetBlizzardCooldown();
+
+        if (breathEquipped)
+            return GetBreathCooldown();
+
+        if (enlightenmentEquipped)
+            return enlightenmentCooldownPerCharge;
+
+        if (cataclysmEquipped)
+            return GetCataclysmCooldown();
+
+        return 0f;
+    }
 }
