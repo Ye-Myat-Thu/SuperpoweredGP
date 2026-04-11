@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c8493284ab0d7a4ea789e4800f61b58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XPDrop
-  xpValue: 5
+  xpValue: 25
   rotateSpeed: 90
 --- !u!65 &6168199740337207276
 BoxCollider:

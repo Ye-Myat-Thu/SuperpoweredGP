@@ -34,11 +34,15 @@ public class LevelUpManager : MonoBehaviour
 
     private void Start()
     {
-        if (grantPointAtLevel1)
-        {
-            skillPoints = 1;
-            OnSkillPointsChanged?.Invoke(skillPoints);
-        }
+        skillPoints = grantPointAtLevel1 ? 1: 0;
+        OnSkillPointsChanged?.Invoke(skillPoints);
+
+        // ===== old ===== //
+        //if (grantPointAtLevel1)
+        //{
+        //    skillPoints = 1;
+        //    OnSkillPointsChanged?.Invoke(skillPoints);
+        //}
     }
 
     private void HandleLevelUp(int newLevel)

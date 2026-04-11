@@ -78,8 +78,18 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     public float XPToNext => xpToNext;
     public int LevelCap => levelCap;
 
+    public CoreStats CoreStats => coreStats;
+    public CoreStats BonusStats => bonusStats;
+    
+    public int TotalStrength => coreStats.Strength + bonusStats.Strength;
+    public int TotalAgility => coreStats.Agility + bonusStats.Agility;
+    public int TotalIntelligence => coreStats.Intelligence + bonusStats.Intelligence;
+
+    public event Action OnStatsChanged;
+
     public CharacterClassData ClassData => classData;
     public int Level => level;
+    //==============
 
     private void Awake()
     {
@@ -176,6 +186,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         currentMana = Mathf.Clamp(currentMana, 0f, MaxMana);
 
         ApplyMoveSpeedToAgent();
+        OnStatsChanged?.Invoke();
         PushUI();
     }
 

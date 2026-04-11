@@ -21,7 +21,7 @@ public class TitanWhirlAbility : MonoBehaviour, ICooldownOverrideable, IUpgradea
     public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
 
     [Header("Level Up")]
-    [SerializeField] private int abilityLevel = 1;
+    [SerializeField] private int abilityLevel = 0;
     [SerializeField] private int maxAbilityLevel = 5;
     public int AbilityLevel => abilityLevel;
     public int MaxAbilityLevel => maxAbilityLevel;
@@ -77,6 +77,8 @@ public class TitanWhirlAbility : MonoBehaviour, ICooldownOverrideable, IUpgradea
         //StartWhirl();
         //nextReadyTime = Time.time + cd;
 
+        if (abilityLevel <= 0) return;
+
         if (IsWhirling) return;
 
         if (!overrideCooldownEnabled && Time.time < nextReadyTime) return;
@@ -111,14 +113,30 @@ public class TitanWhirlAbility : MonoBehaviour, ICooldownOverrideable, IUpgradea
     public void LevelUpAbility()
     {
         if (abilityLevel >= MaxAbilityLevel) return;
+
         abilityLevel++;
+
+        if (abilityLevel > 1)
+        {
+            whirlDamage += 5f;
+            baseCooldown = Mathf.Max(0.5f, baseCooldown - 1.5f);
+            whirlRadius += 2.5f;
+            activeDuration += 0.45f;
+            damageTickInterval = Mathf.Max(0.05f, damageTickInterval - 0.05f);
+        }
+
         OnAbilityLevelChanged?.Invoke(abilityLevel);
 
-        whirlDamage += 5f;
-        baseCooldown -= 1.5f;
-        whirlRadius += 2.5f;
-        activeDuration += 0.45f;
-        damageTickInterval -= 0.25f;
+        //===== old =====//
+        //if (abilityLevel >= MaxAbilityLevel) return;
+        //abilityLevel++;
+        //OnAbilityLevelChanged?.Invoke(abilityLevel);
+
+        //whirlDamage += 5f;
+        //baseCooldown -= 1.5f;
+        //whirlRadius += 2.5f;
+        //activeDuration += 0.45f;
+        //damageTickInterval -= 0.25f;
     }
 
     private void StartWhirl()

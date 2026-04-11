@@ -15,7 +15,7 @@ public class Rage : MonoBehaviour, ICooldownOverrideable, IUpgradeableAbility
     [SerializeField] private float duration = 1.5f;
 
     [Header("Level Up")]
-    [SerializeField] private int abilityLevel = 1;
+    [SerializeField] private int abilityLevel = 0;
     [SerializeField] private int maxAbilityLevel = 5;
     public int AbilityLevel => abilityLevel;
     public int MaxAbilityLevel => maxAbilityLevel;
@@ -69,9 +69,11 @@ public class Rage : MonoBehaviour, ICooldownOverrideable, IUpgradeableAbility
 
     private void Update()
     {
+        if (abilityLevel <= 0) return;
+
         if (!IsActive)
         {
-            if (Input.GetKeyDown(castKey) && Time.time >= nextCastTime)
+            if (Input.GetKeyDown(castKey) && (overrideCooldownEnabled || Time.time >= nextCastTime))
             {
                 StartAbility();
             }
@@ -94,14 +96,30 @@ public class Rage : MonoBehaviour, ICooldownOverrideable, IUpgradeableAbility
     public void LevelUpAbility()
     {
         if (abilityLevel >= maxAbilityLevel) return;
+
         abilityLevel++;
+
+        if (abilityLevel > 1)
+        {
+            damage += 5f;
+            collisionRadius += 0.2f;
+            duration += 0.45f;
+            cooldown = Mathf.Max(0.5f, cooldown - 1f);
+            knockbackForce += 3f;
+        }
+
         OnAbilityLevelChanged?.Invoke(abilityLevel);
 
-        damage += 5f;
-        collisionRadius += 0.2f;
-        duration += 0.45f;
-        cooldown -= 1f;
-        knockbackForce += 3f;
+        //===== old =====//
+        //if (abilityLevel >= maxAbilityLevel) return;
+        //abilityLevel++;
+        //OnAbilityLevelChanged?.Invoke(abilityLevel);
+
+        //damage += 5f;
+        //collisionRadius += 0.2f;
+        //duration += 0.45f;
+        //cooldown -= 1f;
+        //knockbackForce += 3f;
     }
 
     //----------Interface methods
@@ -118,13 +136,15 @@ public class Rage : MonoBehaviour, ICooldownOverrideable, IUpgradeableAbility
     {
         //if (!IsActive && Time.time >= nextCastTime)
         //    StartAbility();
-
+        if (abilityLevel <= 0) return;
         if (!IsActive) StartAbility();
     }
     //---------------------------
 
     private void StartAbility()
     {
+        if (abilityLevel <= 0) return;
+
         IsActive = true;
         endTime = Time.time + duration;
         //nextCastTime = Time.time + cooldown;
