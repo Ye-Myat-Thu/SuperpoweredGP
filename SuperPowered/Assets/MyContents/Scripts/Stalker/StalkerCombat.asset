@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f9a0b3f13c290648a8e9901a2ea8bf9, type: 3}
+  m_Name: StalkerCombat
+  m_EditorClassIdentifier: Assembly-CSharp::CombatProfile
+  attackType: 2
+  damage: 20
+  attacksPerSecond: 1
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  meleeRadius: 1.2
+  fastProjectilePrefab: {fileID: 1410586811020882785, guid: 5ba89a18451d3ad4f91c41c021927ac1, type: 3}
+  fastProjectileSpeed: 30
+  fastProjectileLifetime: 3
+  fastProjectileSpawnOffset: 1
+  magicProjectilePrefab: {fileID: 0}
+  magicStartSpeed: 5
+  magicMaxSpeed: 40
+  magicAcceleration: 10
+  magicProjectileLifetime: 4
+  magicSpawnOffset: 1
+  overheatMax: 100
+  overheatPerShot: 8
+  overheatCooldownPerSecond: 25
+  overheatLockoutTime: 1.5

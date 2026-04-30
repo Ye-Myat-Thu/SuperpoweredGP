@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
@@ -13,12 +14,22 @@ public struct LevelSpawnBonus
 
 public class EnemySpawnDirector : MonoBehaviour
 {
+    public static event System.Action<BossEnemy> OnBossSpawned;
+
     [Header("Ref")]
     [SerializeField] private BaseCharacter playerChar;
     [SerializeField] private Camera mainCam;
 
-    [Header("Enemy Pool")]
-    [SerializeField] private GameObject[] enemyPrefabs;
+    [Header("Enemy Pools By Type")]
+    [SerializeField] private GameObject[] minionPrefabs;
+    [SerializeField] private GameObject[] magePrefabs;
+    [SerializeField] private GameObject[] warriorPrefabs;
+    [SerializeField] private GameObject[] roguePrefabs;
+
+    [Header("Boss")]
+    [SerializeField] private GameObject bossPrefab;
+    [SerializeField] private Transform bossSpawnPoint;
+    [SerializeField] private int bossLevel = 25;
 
     [Header("Spawn Points")]
     [SerializeField] private Transform[] spawnPoints;
@@ -32,7 +43,12 @@ public class EnemySpawnDirector : MonoBehaviour
     [SerializeField] private float baseSpawnInterval = 2f;
     [SerializeField] private float spawnRatePercent = 100f; //global multiplier in percent
     [SerializeField] private float timeRateIncreasePercentPerMinute = 10f; //spawn rate incr over time
-                                                                           //
+
+    [Header("Level 9-15 Spawn Scaling")]
+    [SerializeField] private int scalingStartLevel = 9;
+    [SerializeField] private int scalingEndLevel = 15;
+    [SerializeField] private float extraSpawnRatePerLevel = 8f;
+
     [Header("Spawn Amount")]
     [SerializeField] private int enemiesPerSpawn = 1;
 
@@ -52,6 +68,11 @@ public class EnemySpawnDirector : MonoBehaviour
     private float spawnTimer;
     private float elapsedTime;
 
+    private readonly List<BaseEnemy> aliveSpawnedEnemies = new List<BaseEnemy>();
+    private bool bossSequenceStarted;
+    private bool bossSpawned;
+    private bool spawnerStopped;
+
     private void Awake()
     {
         if (!mainCam)
@@ -67,6 +88,16 @@ public class EnemySpawnDirector : MonoBehaviour
 
     private void Update()
     {
+        CleanupDeadEnemies();
+
+        if (playerChar != null && playerChar.Level >= bossLevel && !bossSequenceStarted)
+        {
+            bossSequenceStarted = true;
+            spawnerStopped = true;
+            StartCoroutine(BossSpawnRoutine());
+            return;
+        }
+
         if (!CanSpawn())
             return;
 
@@ -84,7 +115,13 @@ public class EnemySpawnDirector : MonoBehaviour
 
     private bool CanSpawn()
     {
-        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+        if (spawnerStopped)
+            return false;
+
+        if (bossSpawned)
+            return false;
+
+        if (playerChar != null && playerChar.Level >= bossLevel)
             return false;
 
         if (spawnPoints == null || spawnPoints.Length == 0)
@@ -94,6 +131,43 @@ public class EnemySpawnDirector : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private IEnumerator BossSpawnRoutine()
+    {
+        while (aliveSpawnedEnemies.Count > 0)
+        {
+            CleanupDeadEnemies();
+            yield return null;
+        }
+
+        SpawnBoss();
+    }
+
+    private void SpawnBoss()
+    {
+        if (bossSpawned) return;
+        if (!bossPrefab) return;
+
+        Vector3 spawnPos = bossSpawnPoint ? bossSpawnPoint.position : transform.position;
+        Quaternion spawnRot = bossSpawnPoint ? bossSpawnPoint.rotation : Quaternion.identity;
+
+        GameObject bossObj = Instantiate(bossPrefab, spawnPos, spawnRot);
+
+        BossEnemy spawnedBoss = bossObj.GetComponent<BossEnemy>();
+        if (!spawnedBoss)
+            spawnedBoss = bossObj.GetComponentInChildren<BossEnemy>();
+
+        if (spawnedBoss != null)
+        {
+            OnBossSpawned?.Invoke(spawnedBoss);
+        }
+        else
+        {
+            Debug.LogError("Boss spawned, but no BossEnemy script found on prefab.");
+        }
+
+        bossSpawned = true;
     }
 
     private void SpawnWaveTick()
@@ -106,12 +180,63 @@ public class EnemySpawnDirector : MonoBehaviour
         for (int i = 0; i < enemiesPerSpawn; i++)
         {
             Transform chosenPoint = validSpawnPoints[Random.Range(0, validSpawnPoints.Count)];
-            GameObject chosenEnemy = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+            GameObject chosenEnemy = GetEnemyPrefabForCurrentLevel();
+
+            if (!chosenEnemy) continue;
 
             Vector3 spawnPos;
             if (TryGetSpawnPosition(chosenPoint, out spawnPos))
             {
-                Instantiate(chosenEnemy, spawnPos, Quaternion.identity); 
+                GameObject obj = Instantiate(chosenEnemy, spawnPos, Quaternion.identity);
+
+                BaseEnemy enemy = obj.GetComponent<BaseEnemy>();
+                if (enemy != null)
+                    aliveSpawnedEnemies.Add(enemy);
+            }
+        }
+    }
+
+    private GameObject GetEnemyPrefabForCurrentLevel()
+    {
+        int level = playerChar ? playerChar.Level : 1;
+
+        List<GameObject> pool = new List<GameObject>();
+
+        AddPrefabsToPool(pool, minionPrefabs);
+
+        if (level >= 5)
+            AddPrefabsToPool(pool, magePrefabs);
+
+        if (level >= 8)
+            AddPrefabsToPool(pool, warriorPrefabs);
+
+        if (level >= 16)
+            AddPrefabsToPool(pool, roguePrefabs);
+
+        if (pool.Count == 0)
+            return null;
+
+        return pool[Random.Range(0, pool.Count)];
+    }
+
+    private void AddPrefabsToPool(List<GameObject> pool, GameObject[] prefabs)
+    {
+        if (prefabs == null) return;
+
+        for (int i = 0; i < prefabs.Length; i++)
+        {
+            if (prefabs[i])
+                pool.Add(prefabs[i]);
+        }
+    }
+
+    private void CleanupDeadEnemies()
+    {
+        for (int i = aliveSpawnedEnemies.Count - 1; i >= 0; i--)
+        {
+            if (aliveSpawnedEnemies[i] == null || aliveSpawnedEnemies[i].IsDead)
+            {
+                aliveSpawnedEnemies.RemoveAt(i);
             }
         }
     }
@@ -201,6 +326,12 @@ public class EnemySpawnDirector : MonoBehaviour
             {
                 totalBonus += levelBonuses[i].bonusPercent;
             }
+        }
+
+        if (playerLevel >= scalingStartLevel)
+        {
+            int scaledLevels = Mathf.Clamp(playerLevel, scalingStartLevel, scalingEndLevel) - scalingStartLevel + 1;
+            totalBonus += scaledLevels * extraSpawnRatePerLevel;
         }
 
         return totalBonus;

@@ -13,11 +13,25 @@ public class UniversalSpellDisplayData
     public Sprite icon;
 }
 
+[System.Serializable]
+public class AttributeDisplayData
+{
+    
+
+    public AttributeType type;
+    public Sprite icon;
+}
+
 public class UpgradeManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BaseCharacter playerCharacter;
     [SerializeField] private UniversalSpellSet universalSpellSet;
+
+    //[Header("Attribute Icons")]
+    //[SerializeField] private Sprite strengthIcon;
+    //[SerializeField] private Sprite agilityIcon;
+    //[SerializeField] private Sprite intelligenceIcon;
 
     [Header("Upgrade UI Roots")]
     [SerializeField] private GameObject upgradeHUDRoot;
@@ -37,6 +51,9 @@ public class UpgradeManager : MonoBehaviour
     //[SerializeField] private Sprite cataclysmIcon;
     [Header("Universal Spell Dispaly Data")]
     [SerializeField] private List<UniversalSpellDisplayData> universalSpellDisplayData = new();
+
+    [Header("Attribute Display Data")]
+    [SerializeField] private List<AttributeDisplayData> attributeDisplayData = new();
 
     [Header("HUD Spell Slot")]
     [SerializeField] private UnityEngine.UI.Image universalSpellHudIcon;
@@ -201,7 +218,16 @@ public class UpgradeManager : MonoBehaviour
         if (universalSpellSet != null)
         {
             universalSpellSet.UpgradeSpell(spellType);
+            universalSpellSet.EquipSpell(spellType);
         }
+
+        if (universalSpellHudIcon != null)
+        {
+            universalSpellHudIcon.sprite = GetSpellIcon(spellType);
+            universalSpellHudIcon.enabled = true;
+        }
+
+        equippedUniversalSpell = spellType;
     }
 
     private void ApplyAttributeBonus(AttributeType attributeType, int amount)
@@ -329,7 +355,7 @@ public class UpgradeManager : MonoBehaviour
             amount = 2,
             title = $"{attr} Boost",
             description = $"+2 {attr}",
-            icon = null
+            icon = GetAttributeIcon(attr)
         };
     }
 
@@ -368,6 +394,17 @@ public class UpgradeManager : MonoBehaviour
         {
             if (universalSpellDisplayData[i] != null && universalSpellDisplayData[i].spellType == spellType)
                 return universalSpellDisplayData[i];
+        }
+
+        return null;
+    }
+
+    private Sprite GetAttributeIcon(AttributeType attributeType)
+    {
+        for (int i = 0; i < attributeDisplayData.Count; i++)
+        {
+            if (attributeDisplayData[i] != null && attributeDisplayData[i].type == attributeType)
+                return attributeDisplayData[i].icon;
         }
 
         return null;

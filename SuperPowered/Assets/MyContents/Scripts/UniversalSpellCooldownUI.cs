@@ -1,11 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UniversalSpellCooldownUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private UniversalSpellSet universalSpellSet;
     [SerializeField] private Image fillImage;
+
+    [Header("Enlightenment Charges UI")]
+    [SerializeField] private GameObject chargesRoot;
+    [SerializeField] private TMP_Text chargesText;
 
     [Header("Behaviour")]
     [SerializeField] private bool fullWhenReady = true;
@@ -31,6 +36,7 @@ public class UniversalSpellCooldownUI : MonoBehaviour
             else
                 fillImage.fillAmount = 0f;
 
+            SetChargesVisible(false);
             return;
         }
 
@@ -42,5 +48,28 @@ public class UniversalSpellCooldownUI : MonoBehaviour
         float t = (duration <= 0.0001f) ? 0f : Mathf.Clamp01(remaining / duration);
 
         fillImage.fillAmount = fullWhenReady ? (1f - t) : t;
+
+        UpdateChargesUI();
+    }
+
+    private void UpdateChargesUI()
+    {
+        bool showCharges = universalSpellSet.IsEnlightenmentEquipped();
+
+        SetChargesVisible(showCharges);
+
+        if (!showCharges || !chargesText)
+            return;
+
+        int current = universalSpellSet.GetEnlightenmentCharges();
+        int max = universalSpellSet.GetEnlightenmentMaxChargesPublic();
+
+        chargesText.text = $"{current}/{max}";
+    }
+
+    private void SetChargesVisible(bool visible)
+    {
+        if (chargesRoot)
+            chargesRoot.SetActive(visible);
     }
 }

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81978c00e15367f47b6de478f70d8559, type: 3}
+  m_Name: StalkerClass
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterClassData
+  classType: 1
+  portrait: {fileID: 21300000, guid: aec0b7dcdd485cc4187ac944131409ec, type: 3}
+  baseStats:
+    Strength: 2
+    Agility: 4
+    Intelligence: 1
+  perLevelStats:
+    Strength: 1
+    Agility: 3
+    Intelligence: 3
+  baseHealth: 100
+  baseMana: 0
+  baseMoveSpeed: 6
+  baseHealthRegen: 0.55
+  healthRegenPerStrength: 0.02
+  healthPerStrength: 0.7
+  manaPerIntelligence: 0
+  moveSpeedPerAgility: 0.028
+  attackDamagePerStrength: 1
+  attackSpeedPerAgility: 0.02
+  abilityPowerPerIntelligence: 1.2

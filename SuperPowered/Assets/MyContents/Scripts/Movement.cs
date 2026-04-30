@@ -9,6 +9,7 @@ public class Movement : MonoBehaviour
     private Animator animator;
     [SerializeField] private CharacterCombat combat;
     [SerializeField] private GameObject moveIcon;
+    [SerializeField] private CharacterVoice characterVoice;
 
     [Header("Movement Settings")]
     [SerializeField] private LayerMask clickableLayers;
@@ -21,12 +22,22 @@ public class Movement : MonoBehaviour
     [SerializeField] private float repeatInterval = 0.05f;
     [SerializeField] private float maxRayDistance = 500f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] stepClips;
+    [SerializeField] private float stepVolume = 1f;
+    [SerializeField] private float stepPitch = 1f;
+    [SerializeField] private float stepPitchRandom = 0.05f;
+
     private float nextRepeatTime;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        if (!characterVoice) characterVoice = GetComponent<CharacterVoice>();
+
+        if (!audioSource) audioSource = GetComponent<AudioSource>();
 
         //if (!whirlAbility)
         //    whirlAbility = GetComponent<TitanWhirlAbility>();
@@ -100,6 +111,8 @@ public class Movement : MonoBehaviour
         Camera cam = Camera.main;
         if (!cam) return;
 
+        characterVoice?.PlayMoveVoice();
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, clickableLayers))
@@ -148,5 +161,28 @@ public class Movement : MonoBehaviour
             float currentSpeed = agent.velocity.magnitude / Mathf.Max(agent.speed, 0.001f);
             animator.SetFloat("Speed", currentSpeed, 0.1f, Time.deltaTime);
         }
+    }
+
+    private int lastStepIndex = -1;
+
+    private void PlayFootstep()
+    {
+        if (audioSource == null || stepClips == null || stepClips.Length == 0)
+            return;
+
+        int index;
+
+        do
+        {
+            index = UnityEngine.Random.Range(0, stepClips.Length);
+        }
+        while (index == lastStepIndex && stepClips.Length > 1);
+
+        lastStepIndex = index;
+
+        float pitch = stepPitch + UnityEngine.Random.Range(-stepPitchRandom, stepPitchRandom);
+
+        audioSource.pitch = pitch;
+        audioSource.PlayOneShot(stepClips[index], stepVolume);
     }
 }

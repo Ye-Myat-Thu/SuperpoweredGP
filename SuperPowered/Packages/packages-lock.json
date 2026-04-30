@@ -1,5 +1,20 @@
 {
   "dependencies": {
+    "com.qiaozhilei.easy-text-effects": {
+      "version": "https://github.com/LeiQiaoZhi/Easy-Text-Effects-for-Unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0"
+      },
+      "hash": "102249bba7e95ec4f3c3cfbaf4f0afd9b1b4ccce"
+    },
+    "com.unity.2d.sprite": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.11",
       "depth": 0,
@@ -170,7 +185,7 @@
     },
     "com.unity.searcher": {
       "version": "4.9.3",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -184,7 +199,7 @@
     },
     "com.unity.shadergraph": {
       "version": "17.2.0",
-      "depth": 1,
+      "depth": 0,
       "source": "builtin",
       "dependencies": {
         "com.unity.render-pipelines.core": "17.2.0",

@@ -40,6 +40,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     [SerializeField] private List<MonoBehaviour> scriptsToBeDiabled = new List<MonoBehaviour>();
     private bool isDead;
     public bool IsDead => isDead;
+    [SerializeField] private CharacterVoice characterVoice;
 
     [Header("Animation")]
     [SerializeField] private string hitTrigger = "Hit";
@@ -73,6 +74,8 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     public event Action<int> OnLevelUp;
     public event Action<float, float> OnXPChanged;
 
+    public event Action OnCharacterDied;
+
     public float CurrentHealth => currentHealth;
     public float CurrentXP => xp;
     public float XPToNext => xpToNext;
@@ -95,6 +98,7 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponentInChildren<Animator>();
+        if (!characterVoice) characterVoice = GetComponent<CharacterVoice>();
 
         if (blinkRenderers == null || blinkRenderers.Length == 0)
         {
@@ -186,6 +190,9 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         currentMana = Mathf.Clamp(currentMana, 0f, MaxMana);
 
         ApplyMoveSpeedToAgent();
+
+        UpdateIntelligenceScaling();
+
         OnStatsChanged?.Invoke();
         PushUI();
     }
@@ -206,6 +213,9 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
 
         currentHealth = Mathf.Max(0f, currentHealth - amount);
         OnHealthChanged?.Invoke(currentHealth, MaxHealth);
+
+        characterVoice?.StopMoveVoice();
+        characterVoice?.PlayGrunt();
 
         if (animator != null)
         {
@@ -274,6 +284,18 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         OnManaChanged?.Invoke(currentMana, MaxMana);
     }
 
+    private void UpdateIntelligenceScaling()
+    {
+        float bonusDamage = TotalIntelligence * 1.5f;
+
+        IIntelligenceScalable[] scalableAbilities = GetComponentsInChildren<IIntelligenceScalable>();
+
+        for (int i = 0; i < scalableAbilities.Length; i++)
+        {
+            scalableAbilities[i].SetIntelligenceBonusDamage(bonusDamage);
+        }
+    }
+
     //-- XP / Leveling --
     public void GainXP(float amount)
     {
@@ -329,6 +351,10 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         if (IsDead) return;
         isDead = true;
 
+        characterVoice?.PlayDeath();
+
+        OnCharacterDied?.Invoke();
+
         DisableScriptsOnDeath();
         
         //Hook your death flow (UI, restart, etc.)
@@ -336,6 +362,8 @@ public class BaseCharacter : MonoBehaviour, IDamageable, IRegenModifiable
         {
             animator.SetTrigger(dieTrigger);
         }
+
+       
         DestroyObject(gameObject, 3f);
         Debug.Log($"{name} died.");
     }

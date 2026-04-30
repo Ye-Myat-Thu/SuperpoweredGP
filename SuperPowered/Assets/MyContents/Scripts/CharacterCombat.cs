@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 
 public class CharacterCombat : MonoBehaviour
 {
@@ -20,23 +21,59 @@ public class CharacterCombat : MonoBehaviour
     [Header("Optional")]
     [SerializeField] private Animator animator;
     [SerializeField] private string attackTrigger = "Attack";
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip pistolClip;
 
     private float nextAttackTime;
     private Camera cam;
     private NavMeshAgent agent;
+
+    private float currentOverheat;
+    private bool overheated;
+    private float overheatReadyTime;
+
+    public float CurrentOverheat => currentOverheat;
+    public float MaxOverheat => profile ? profile.overheatMax : 100f;
+    public float OverheatNormalized => profile ? currentOverheat / profile.overheatMax : 0f;
+    public bool IsOverheated => overheated;
+
+    private float bonusDamage;
+    private bool isLockedInAnimation;
+
+    public void AddBonusDamage(float amount)
+    {
+        bonusDamage += amount;
+    }
+
+    public void RemoveBonusDamage(float amount)
+    {
+        bonusDamage -= amount;
+    }
+
+    public void SetAnimationLock(bool value)
+    {
+        isLockedInAnimation = value;
+    }
 
     void Awake()
     {
         cam = Camera.main;
         agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponentInChildren<Animator>();
+
+        if (!audioSource)
+            audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
         if (!profile) return;
 
-        // Input Attack: Left mouse to attack (change to whatever you want)
+        UpdateOverheat();
+
+        if (IsPointerOverUI())
+            return;
+
         if (profile.attackType == AttackType.Melee)
         {
             if (Input.GetMouseButton(0))
@@ -44,15 +81,33 @@ public class CharacterCombat : MonoBehaviour
                 TryAttack();
             }
         }
-        else
+        else if (profile.attackType == AttackType.MagicOverheatProjectile)
         {
-            TryAttack();
+            // Hold left mouse
+            if (Input.GetMouseButton(0))
+            {
+                TryAttack();
+            }
+        }
+        else if (profile.attackType == AttackType.FastProjectile)
+        {
+            // Press left mouse once
+            if (Input.GetMouseButtonDown(0))
+            {
+                TryAttack();
+            }
         }
 
-            
+        if (isLockedInAnimation)
+        {
+            return;
+        }
     }
 
-
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+    }
     //old TryAttack
     //private void TryAttack()
     //{
@@ -109,12 +164,12 @@ public class CharacterCombat : MonoBehaviour
                 DoMelee();
                 break;
 
-            case AttackType.Projectile:
-                DoProjectile();
+            case AttackType.FastProjectile:
+                DoFastProjectile();
                 break;
 
-            case AttackType.Hitscan:
-                DoHitscan();
+            case AttackType.MagicOverheatProjectile:
+                DoMagicOverheatProjectile();
                 break;
         }
     }
@@ -146,38 +201,90 @@ public class CharacterCombat : MonoBehaviour
             IDamageable dmg = hits[i].GetComponentInParent<IDamageable>();
             if (dmg != null)
             {
-                dmg.TakeDamage(profile.damage);
+                dmg.TakeDamage(profile.damage + bonusDamage);
             }
         }
     }
 
-    private void DoProjectile()
+    private void UpdateOverheat()
     {
-        if (!profile.projectilePrefab)
+        if (!profile) return;
+        if (profile.attackType != AttackType.MagicOverheatProjectile) return;
+
+        if (overheated)
         {
-            Debug.LogWarning("Projectile attack type but no projectilePrefab assigned.");
+            if (Time.time >= overheatReadyTime)
+            {
+                overheated = false;
+            }
+
+            return;
+        }
+
+        if (!Input.GetMouseButton(0))
+        {
+            currentOverheat -= profile.overheatCooldownPerSecond * Time.deltaTime;
+            currentOverheat = Mathf.Max(0f, currentOverheat);
+        }
+    }
+
+    private void DoFastProjectile()
+    {
+        if (!profile.fastProjectilePrefab)
+        {
+            Debug.LogWarning("Fast projectile prefab missing.");
             return;
         }
 
         Transform spawn = firePoint ? firePoint : transform;
 
-        Vector3 spawnPos = spawn.position + spawn.forward * profile.projectileSpawnOffset;
-        Projectile p = Instantiate(profile.projectilePrefab, spawnPos, spawn.rotation);
+        Vector3 spawnPos = spawn.position + spawn.forward * profile.fastProjectileSpawnOffset;
+        FastProjectile p = Instantiate(profile.fastProjectilePrefab, spawnPos, spawn.rotation);
 
-        p.Init(profile.damage, profile.projectileSpeed, profile.projectileLifetime, profile.enemyLayers);
+        p.Init(
+            profile.damage,
+            profile.fastProjectileSpeed,
+            profile.fastProjectileLifetime,
+            profile.enemyLayers
+        );
+
+        if (audioSource && pistolClip != null )
+            audioSource.PlayOneShot(pistolClip);
     }
 
-    private void DoHitscan()
+    private void DoMagicOverheatProjectile()
     {
-        Transform origin = firePoint ? firePoint : transform;
+        if (overheated) return;
 
-        Ray ray = new Ray(origin.position, origin.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, profile.hitscanRange, profile.enemyLayers))
+        if (!profile.magicProjectilePrefab)
         {
-            var dmg = hit.collider.GetComponentInParent<IDamageable>();
-            if (dmg != null)
-                dmg.TakeDamage(profile.damage);
+            Debug.LogWarning("Magic projectile prefab missing.");
+            return;
         }
+
+        currentOverheat += profile.overheatPerShot;
+
+        if (currentOverheat >= profile.overheatMax)
+        {
+            currentOverheat = profile.overheatMax;
+            overheated = true;
+            overheatReadyTime = Time.time + profile.overheatLockoutTime;
+            return;
+        }
+
+        Transform spawn = firePoint ? firePoint : transform;
+
+        Vector3 spawnPos = spawn.position + spawn.forward * profile.magicSpawnOffset;
+        MagicOverheatProjectile p = Instantiate(profile.magicProjectilePrefab, spawnPos, spawn.rotation);
+
+        p.Init(
+            profile.damage,
+            profile.magicStartSpeed,
+            profile.magicMaxSpeed,
+            profile.magicAcceleration,
+            profile.magicProjectileLifetime,
+            profile.enemyLayers
+        );
     }
 
     private bool TryGetAimPoint(out Vector3 point)

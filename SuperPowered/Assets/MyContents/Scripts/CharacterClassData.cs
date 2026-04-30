@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum HeroClassType
 {
@@ -20,6 +21,9 @@ public class CharacterClassData : ScriptableObject
 {
     [Header("Identity")]
     public HeroClassType classType;
+
+    [Header("UI")]
+    public Sprite portrait;
 
     [Header("Base Stats")]
     public CoreStats baseStats;

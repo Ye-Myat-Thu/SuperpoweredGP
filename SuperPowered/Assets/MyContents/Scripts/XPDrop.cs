@@ -2,6 +2,48 @@ using UnityEngine;
 
 public class XPDrop : MonoBehaviour
 {
+    [Header("Reference")]
+    [SerializeField] private BaseCharacter targetCharacter;
+    
+    [Header("XP Settings")]
+    [SerializeField] private float rotateSpeed = 90f;
+    [SerializeField] private int xpLevel1To6 = 25;
+    [SerializeField] private int xpLevel7To12 = 20;
+    [SerializeField] private int xpLevel13To20 = 15;
+    [SerializeField] private int minimumXpValue = 1;
+
+    private void Update()
+    {
+        transform.Rotate(Vector3.up, rotateSpeed * Time.deltaTime, Space.World);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        BaseCharacter bc = other.GetComponentInChildren<BaseCharacter>() ?? other.GetComponentInParent<BaseCharacter>() ?? other.transform.root.GetComponent<BaseCharacter>();
+        if (bc == null)
+            return;
+
+        int xpValue = GetXPValueForLevel(bc.Level);
+        bc.GainXP(xpValue);
+
+        Destroy(gameObject);
+    }
+
+    private int GetXPValueForLevel(int playerLevel)
+    {
+        if (playerLevel <= 6)
+            return xpLevel1To6;
+
+        if (playerLevel <= 12)
+            return xpLevel7To12;
+
+        if (playerLevel <= 20)
+            return xpLevel13To20;
+
+        int reduceValue = xpLevel13To20 - (playerLevel - 20);
+        return Mathf.Max(minimumXpValue, reduceValue);
+    }
+
     //[SerializeField] private float xpValue = 5f;
     //[SerializeField] private float rotateSpeed = 90f;
 
@@ -46,21 +88,5 @@ public class XPDrop : MonoBehaviour
     //    }
     //}
 
-    [SerializeField] private float xpValue = 5f;
-    [SerializeField] private float rotateSpeed = 90f;
 
-    private void Update()
-    {
-        transform.Rotate(Vector3.up, rotateSpeed * Time.deltaTime, Space.World);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        BaseCharacter bc = other.GetComponentInParent<BaseCharacter>();
-        if (bc != null)
-        {
-            bc.GainXP(xpValue);
-            Destroy(gameObject);
-        }
-    }
 }

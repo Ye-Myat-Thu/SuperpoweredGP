@@ -234,6 +234,7 @@ GameObject:
   - component: {fileID: 23095887}
   - component: {fileID: 23095889}
   - component: {fileID: 23095888}
+  - component: {fileID: 23095890}
   m_Layer: 5
   m_Name: Extra Spell
   m_TagString: Untagged
@@ -300,6 +301,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 23095886}
   m_CullTransparentMesh: 1
+--- !u!114 &23095890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23095886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460c4f4ef32b8ac439ed9632e2aec9d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UniversalSpellCooldownUI
+  universalSpellSet: {fileID: 919132147908202939}
+  fillImage: {fileID: 1313028885}
+  fullWhenReady: 1
+  hideWhenNoSpellEquipped: 0
 --- !u!43 &28786972
 Mesh:
   m_ObjectHideFlags: 0
@@ -3546,7 +3563,7 @@ GameObject:
   - component: {fileID: 175906159}
   m_Layer: 0
   m_Name: Character
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9676,7 +9693,7 @@ MonoBehaviour:
   abilitiesToFreeCast:
   - {fileID: 495946208}
   - {fileID: 1503238322}
-  character: {fileID: 919132147908202934}
+  character: {fileID: 1119087617}
 --- !u!4 &396380867
 Transform:
   m_ObjectHideFlags: 0
@@ -13475,7 +13492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67acb26c45d228a498e95381275815eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnDirector
-  playerChar: {fileID: 919132147908202934}
+  playerChar: {fileID: 1119087617}
   mainCam: {fileID: 640177479}
   enemyPrefabs:
   - {fileID: 372930308393550814, guid: dd1f606537363464a99d92d5278ea088, type: 3}
@@ -17430,6 +17447,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 741293632}
+  - component: {fileID: 741293633}
   m_Layer: 5
   m_Name: LevelIndicator
   m_TagString: Untagged
@@ -17457,6 +17475,26 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &741293633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741293631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02851a7a6723aaa4488ab3858a31c5a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterInfoUI
+  targetCharacter: {fileID: 1119087617}
+  portraitImage: {fileID: 1681700185}
+  levelText: {fileID: 1263260467}
+  classText: {fileID: 2030338485}
+  useDisplayNameOverride: 1
+  titanDisplayName: Titan
+  stalkerDisplayName: Stalker
+  oracleDisplayName: Oracle
 --- !u!1 &745575160
 GameObject:
   m_ObjectHideFlags: 0
@@ -24472,7 +24510,7 @@ GameObject:
   - component: {fileID: 1119087617}
   m_Layer: 0
   m_Name: BaseCharacter
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -24491,9 +24529,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BaseCharacter
   classData: {fileID: 11400000, guid: ea0d931f3a527eb44bcee350eca23d0b, type: 2}
   coreStats:
-    Strength: 20
-    Agility: 16
-    Intelligence: 10
+    Strength: 0
+    Agility: 0
+    Intelligence: 0
   bonusStats:
     Strength: 0
     Agility: 0
@@ -26865,7 +26903,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Level 1
+  m_text: '
 
 '
   m_isRightToLeft: 0
@@ -28038,7 +28076,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 16e35d8c2f8260a46a00058c9e3fd956, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -28104,7 +28142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d0f76e0463e50e44885a0b896ae5a8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeManager
-  playerCharacter: {fileID: 919132147908202934}
+  playerCharacter: {fileID: 1119087617}
   universalSpellSet: {fileID: 919132147908202939}
   upgradeHUDRoot: {fileID: 1148852149}
   upgrade1Root: {fileID: 1684150643}
@@ -32269,7 +32307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 905685d894f6f084ebebe2d9ba11e93e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rage
-  owner: {fileID: 919132147908202934}
+  owner: {fileID: 1119087617}
   profile: {fileID: 11400000, guid: b5418a7bfd7e1a746af215c1429943e0, type: 2}
   agent: {fileID: 919132147908202930}
   castKey: 119
@@ -38105,7 +38143,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ca0fec99b299a04c8a67325eb9b35ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HUDUniversalBars
-  target: {fileID: 919132147908202934}
+  target: {fileID: 1119087617}
   healthFill: {fileID: 152630651}
   xpFill: {fileID: 19343750}
 --- !u!1 &1761336953
@@ -44297,7 +44335,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Titan
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -47348,7 +47386,6 @@ GameObject:
   - component: {fileID: 919132147908202931}
   - component: {fileID: 919132147908202932}
   - component: {fileID: 919132147908202933}
-  - component: {fileID: 919132147908202934}
   - component: {fileID: 919132147908202935}
   - component: {fileID: 919132147908202936}
   - component: {fileID: 919132147908202937}
@@ -47443,46 +47480,6 @@ MonoBehaviour:
   rightClickRepeat: 1
   repeatInterval: 0.05
   maxRayDistance: 500
---- !u!114 &919132147908202934
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 919132147908202928}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c5e08867babe0f47bdd4e9e0d68cd05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BaseCharacter
-  classData: {fileID: 11400000, guid: ea0d931f3a527eb44bcee350eca23d0b, type: 2}
-  coreStats:
-    Strength: 20
-    Agility: 16
-    Intelligence: 10
-  bonusStats:
-    Strength: 0
-    Agility: 0
-    Intelligence: 0
-  enableHealthRegen: 1
-  level: 1
-  xp: 0
-  xpToNext: 100
-  levelCap: 30
-  xpPerLevel: 100
-  currentHealth: 100
-  currentMana: 0
-  agent: {fileID: 919132147908202930}
-  animator: {fileID: 919132147908202931}
-  scriptsToBeDiabled:
-  - {fileID: 919132147908202933}
-  - {fileID: 919132147908202935}
-  hitTrigger: Hit
-  dieTrigger: Die
-  blinkRenderers: []
-  blinkCount: 3
-  blinkInterval: 0.06
-  isInvulnerable: 0
 --- !u!114 &919132147908202935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47521,7 +47518,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04f1d9f18017a484a82e99a67051a7f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpManager
-  character: {fileID: 919132147908202934}
+  character: {fileID: 1119087617}
   grantPointAtLevel1: 1
   skillPoints: 0
 --- !u!54 &919132147908202937
@@ -47735,11 +47732,11 @@ PrefabInstance:
     - target: {fileID: 8041697873076345028, guid: dd1f606537363464a99d92d5278ea088, type: 3}
       propertyPath: target
       value: 
-      objectReference: {fileID: 543450651624311562}
+      objectReference: {fileID: 175906159}
     - target: {fileID: 8041697873076345028, guid: dd1f606537363464a99d92d5278ea088, type: 3}
       propertyPath: xpDropPrefab
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 3959781927968863749, guid: 35c3d3dc48c72384a82b2bb529467825, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -47820,7 +47817,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1697513768205568218, guid: 92861a441c66ca24aa3672a1c4d99e92, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -60.09921
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1697513768205568218, guid: 92861a441c66ca24aa3672a1c4d99e92, type: 3}
       propertyPath: m_LocalPosition.y
@@ -47828,7 +47825,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1697513768205568218, guid: 92861a441c66ca24aa3672a1c4d99e92, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.71163
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1697513768205568218, guid: 92861a441c66ca24aa3672a1c4d99e92, type: 3}
       propertyPath: m_LocalRotation.w
@@ -49195,6 +49192,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Skeleton_Warrior
       objectReference: {fileID: 0}
+    - target: {fileID: 5275172510311964341, guid: 76b62eb3b1bbadb4e971017bc59a91c3, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 175906159}
     - target: {fileID: 5830015824663547949, guid: 76b62eb3b1bbadb4e971017bc59a91c3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 45.88934

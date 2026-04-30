@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/MainMenu.unity
+    guid: 9325ce3314a8664409284d2786e1aa87
+  - enabled: 1
+    path: Assets/Scenes/Titan_Scene.unity
+    guid: a0828a7a30f982443a81cfc0225dedb4
+  - enabled: 1
+    path: Assets/Scenes/Stalker_Scene.unity
+    guid: ab1d9723846c0784cb55562eaee50e67
+  - enabled: 1
+    path: Assets/Scenes/Oracle_Scene.unity
+    guid: fae85c0baca943941a40efc01486c307
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
