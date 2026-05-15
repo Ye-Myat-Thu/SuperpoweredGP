@@ -17,6 +17,7 @@ public class CharacterCombat : MonoBehaviour
     [SerializeField] private LayerMask aimLayers;      // usually ground layer
     [SerializeField] private Transform firePoint;      // where projectiles spawn (weapon tip / hand)
     [SerializeField] private float aimTurnSpeed = 18f;
+    private Quaternion lockedAttackRotation;
 
     [Header("Optional")]
     [SerializeField] private Animator animator;
@@ -144,9 +145,15 @@ public class CharacterCombat : MonoBehaviour
         {
             //FacePoint(aimPoint);
             if (profile.attackType == AttackType.Melee)
+            {
                 FacePoint(aimPoint);
+                lockedAttackRotation = transform.rotation;
+            }
             else
+            {
                 FacePointInstant(aimPoint);
+                lockedAttackRotation = transform.rotation;
+            }
         }
 
         if (animator && !string.IsNullOrEmpty(attackTrigger))
@@ -238,8 +245,9 @@ public class CharacterCombat : MonoBehaviour
 
         Transform spawn = firePoint ? firePoint : transform;
 
-        Vector3 spawnPos = spawn.position + spawn.forward * profile.fastProjectileSpawnOffset;
-        FastProjectile p = Instantiate(profile.fastProjectilePrefab, spawnPos, spawn.rotation);
+        Vector3 spawnForward = lockedAttackRotation * Vector3.forward;
+        Vector3 spawnPos = spawn.position + spawnForward * profile.fastProjectileSpawnOffset;
+        FastProjectile p = Instantiate(profile.fastProjectilePrefab, spawnPos, lockedAttackRotation);
 
         p.Init(
             profile.damage,

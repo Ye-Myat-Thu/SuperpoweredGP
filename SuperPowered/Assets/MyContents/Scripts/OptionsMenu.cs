@@ -44,7 +44,11 @@ public class OptionsMenu : MonoBehaviour
             musicVolumeSlider.value = musicVolume;
 
         if (fullscreenToggle)
-            fullscreenToggle.isOn = fullscreen;
+        {
+            fullscreenToggle.SetIsOnWithoutNotify(fullscreen);
+            fullscreenToggle.onValueChanged.RemoveListener(SetFullscreen);
+            fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
+        }
 
         SetMasterVolume(masterVolume);
         SetMusicVolume(musicVolume);
@@ -73,8 +77,19 @@ public class OptionsMenu : MonoBehaviour
 
     public void SetFullscreen(bool isFullscreen)
     {
-        Screen.fullScreen = isFullscreen;
+        if (isFullscreen)
+        {
+            Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight,FullScreenMode.FullScreenWindow);
+        }
+        else
+        {
+            Screen.SetResolution(1280, 720, FullScreenMode.Windowed);
+        }
+
         PlayerPrefs.SetInt(FullscreenKey, isFullscreen ? 1 : 0);
+        PlayerPrefs.Save();
+
+        Debug.Log("Fullscreen set to: " + isFullscreen);
     }
 
     public void ApplyAndSave()

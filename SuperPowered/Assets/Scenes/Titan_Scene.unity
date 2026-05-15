@@ -67425,6 +67425,8 @@ MonoBehaviour:
   aimTurnSpeed: 18
   animator: {fileID: 919132147908202931}
   attackTrigger: Attack
+  audioSource: {fileID: 0}
+  pistolClip: {fileID: 0}
 --- !u!114 &919132147908202936
 MonoBehaviour:
   m_ObjectHideFlags: 0
